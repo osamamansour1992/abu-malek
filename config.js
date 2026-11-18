@@ -5,7 +5,7 @@
   3) يجب أن يعيد وسيط الأسعار JSON وفق البنية الموثقة في README.
 */
 window.ABU_MALEK_CONFIG = {
-  BLOGGER_FEED_URL: "https://asearaldhahab.blogspot.com/feeds/posts/default?alt=json&max-results=20",
+BLOGGER_FEED_URL: 'https://asearaldhahab.blogspot.com/feeds/posts/default',
   MARKET_API_URL: "",
   REFRESH_INTERVAL_MS: 300000
 };
