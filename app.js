@@ -212,7 +212,7 @@
 
   loadMarket();
   loadBlogger();
-  if (cfg.REFRESH_INTERVAL_MS > 0) setInterval(loadMarket, cfg.REFRESH_INTERVAL_MS);
+  if (cfg.MARKET_API_URL && cfg.REFRESH_INTERVAL_MS > 0) setInterval(loadMarket, cfg.REFRESH_INTERVAL_MS);
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(console.warn));
   }
