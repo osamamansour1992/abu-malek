@@ -10,15 +10,77 @@
   async function loadMarket() {
     if (!cfg.MARKET_API_URL) return;
     try {
-      const res = await fetch(cfg.MARKET_API_URL, {headers:{'Accept':'application/json'}, cache:'no-store'});
-      if (!res.ok) throw new Error('تعذر جلب الأسعار');
-      const data = await res.json();
-      if (!data || !data.updatedAt || !data.gold || !Array.isArray(data.currencies)) throw new Error('بنية بيانات غير صحيحة');
+      const res = await fetch(cfg.MARKET_API_URL, {
+        headers: {'Accept':'application/json', 'X-Contact':'https://osamamansour1992.github.io/abu-malek/'},
+        cache: 'no-store'
+      });
+      if (!res.ok) throw new Error('تعذر جلب الأسعار: HTTP ' + res.status);
+      const feed = await res.json();
+      if (!Array.isArray(feed.assets)) throw new Error('صيغة بيانات المصدر غير متوقعة');
+
+      const find = slug => feed.assets.find(a => a.slug === slug);
+      const quote = (asset, side) => {
+        const best = asset?.directions?.[side]?.best;
+        if (!best || !Number.isFinite(Number(best.value))) return null;
+        return {value:Number(best.value), seller:best.sellerAr || best.seller || 'جهة مرصودة'};
+      };
+      const makePair = asset => {
+        const buy = quote(asset, 'buy');
+        const sell = quote(asset, 'sell');
+        if (!buy || !sell) return null;
+        return {buy:buy.value, sell:sell.value, buySource:buy.seller, sellSource:sell.seller};
+      };
+
+      const gold = {};
+      for (const [karat,slug] of [['21','gold-21k'],['24','gold-24k'],['18','gold-18k']]) {
+        const pair = makePair(find(slug));
+        if (pair) gold[karat] = pair;
+      }
+      if (gold['21']) {
+        gold.coin = {
+          buy: gold['21'].buy * 8,
+          sell: gold['21'].sell * 8,
+          buySource: gold['21'].buySource,
+          sellSource: gold['21'].sellSource,
+          derived: true
+        };
+      }
+
+      const currencyDefs = [
+        ['us-dollar','الدولار الأمريكي','USD'],
+        ['euro','اليورو الأوروبي','EUR'],
+        ['saudi-riyal','الريال السعودي','SAR'],
+        ['uae-dirham','الدرهم الإماراتي','AED'],
+        ['kuwaiti-dinar','الدينار الكويتي','KWD']
+      ];
+      const currencies = currencyDefs.map(([slug,name,code]) => {
+        const asset = find(slug);
+        const pair = makePair(asset);
+        if (!pair) return null;
+        return {
+          name, code, buy:pair.buy, sell:pair.sell,
+          source: pair.buySource === pair.sellSource ? pair.buySource : pair.buySource + ' / ' + pair.sellSource
+        };
+      }).filter(Boolean);
+
+      if (!Object.keys(gold).length && !currencies.length) throw new Error('المصدر لم يرجع أسعارًا قابلة للعرض');
+      const dates = feed.assets.map(a => a.observedAt).filter(Boolean).sort();
+      const stale = feed.assets.some(a => a.freshness?.stale === true);
+      const data = {
+        updatedAt: dates[dates.length - 1] || feed.generatedAt || new Date().toISOString(),
+        gold, currencies, status: stale ? 'stale' : 'fresh'
+      };
       market = data;
       renderMarket(data);
+      const note = document.querySelector('.source-note');
+      if (note) note.innerHTML = '<span class="status-dot"></span> مصدر البيانات: <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a>. الأسعار إرشادية من جهات مرصودة ووقت الرصد موضح أعلاه. جنيه الذهب محسوب من 8 جرام عيار 21.';
     } catch (e) {
       console.warn('Market feed unavailable:', e);
-      $('lastUpdated').textContent = 'تعذر التحديث؛ تحقق من مصدر الأسعار';
+      $('lastUpdated').textContent = market
+        ? $('lastUpdated').textContent + ' — تعذر التحديث؛ نحتفظ بآخر قراءة'
+        : 'تعذر الاتصال بمصدر الأسعار؛ لا توجد أسعار مؤكدة حاليًا';
+      const note = document.querySelector('.source-note');
+      if (note) note.innerHTML = '<span class="status-dot"></span> تعذر تحديث الأسعار من المصدر الآن؛ لن نعرض أرقامًا تقديرية. <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">مصدر البيانات</a>.';
     }
   }
 
