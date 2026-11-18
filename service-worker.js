@@ -1,11 +1,14 @@
 /* أبو مالك PWA service worker
    تغيير CACHE_VERSION يجبر المتصفحات على تنزيل النسخة الجديدة بعد النشر.
 */
-const CACHE_VERSION = 'abu-malek-v9';
+const CACHE_VERSION = 'abu-malek-v10';
 const APP_SHELL = [
   './',
   './index.html',
   './articles.html',
+  './about.html',
+  './contact.html',
+  './assets/abu-malek-logo.webp',
   './styles.css',
   './config.js',
   './app.js',
