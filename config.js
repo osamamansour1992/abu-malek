@@ -1,11 +1,10 @@
 /*
-  إعدادات الربط:
-  1) ضع رابط خلاصة بلوجر في BLOGGER_FEED_URL (صيغة JSON feed).
-  2) لا تضع مفاتيح API السرية في هذا الملف؛ استخدم وسيطًا خلفيًا آمنًا.
-  3) يجب أن يعيد وسيط الأسعار JSON وفق البنية الموثقة في README.
+  إعدادات أبو مالك
+  مصدر الذهب والعملات: دليلك – API عام، مجاني للمعلومات فقط.
+  فحص جديد كل 5 دقائق؛ المصدر يحدّث بياناته خلال اليوم وليس لحظيًا بالثواني.
 */
 window.ABU_MALEK_CONFIG = {
-BLOGGER_FEED_URL: 'https://asearaldhahab.blogspot.com/feeds/posts/default',
-  MARKET_API_URL: "",
+  BLOGGER_FEED_URL: 'https://asearaldhahab.blogspot.com/feeds/posts/default',
+  MARKET_API_URL: 'https://getdaleelak.com/api/v1/feed.json',
   REFRESH_INTERVAL_MS: 300000
 };
