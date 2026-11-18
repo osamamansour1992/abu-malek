@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://osamamansour1992.github.io/abu-malek/sitemap.xml
