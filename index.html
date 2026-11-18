@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101b30">
+  <meta name="description" content="أبو مالك - متابعة أسعار الذهب والعملات والأخبار والتحليلات الاقتصادية في مصر.">
+  <title>أبو مالك | أسعار الذهب والعملات</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="أبو مالك الرئيسية">
+      <span class="brand-mark">أم</span>
+      <span><b>أبو مالك</b><small>أسعار الذهب والعملات</small></span>
+    </a>
+    <nav class="desktop-nav" aria-label="القائمة الرئيسية">
+      <a class="active" href="#home">الرئيسية</a><a href="#gold">الذهب</a><a href="#currencies">العملات</a>
+      <a href="#calculator">الحاسبة</a><a href="#articles">المقالات والتحليلات</a>
+    </nav>
+    <button class="icon-button" id="themeToggle" aria-label="تغيير المظهر" title="تغيير المظهر">◐</button>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><i></i> بوابتك لمتابعة الأسواق المصرية</span>
+        <h1>السوق في <em>صورة أوضح.</em></h1>
+        <p>تابع أسعار الذهب والعملات، واقرأ الأخبار والتحليلات الاقتصادية من مكان واحد.</p>
+        <div class="hero-actions"><a class="button gold-button" href="#gold">تابع أسعار الذهب <span>←</span></a><a class="text-link" href="#articles">اكتشف التحليلات</a></div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="coin"><span>Au</span><small>24K</small></div>
+        <div class="floating-tag tag-one">GOLD <b>MARKET</b></div>
+        <div class="floating-tag tag-two">EGYPT <b>ECONOMY</b></div>
+      </div>
+      <div class="hero-foot"><span>تغطية السوق المصري</span><span class="live-dot"></span><span>آخر تحديث: <b id="lastUpdated">لم يتم ربط مصدر الأسعار بعد</b></span></div>
+    </section>
+
+    <section class="section" id="gold">
+      <div class="section-heading"><div><span class="eyebrow">PRECIOUS METALS</span><h2>أسعار الذهب <em>في مصر</em></h2><p>أسعار الشراء والبيع من مصدر متخصص، بعد تفعيل الربط.</p></div><span class="section-index">01 / GOLD</span></div>
+      <div class="price-grid" id="goldGrid">
+        <article class="price-card featured"><div class="card-top"><span>عيار 21</span><span class="pill">الأكثر تداولًا</span></div><div class="price-value waiting">بانتظار ربط المصدر</div><div class="price-unit">جنيه مصري / جرام</div><div class="buy-sell"><span>شراء <b>—</b></span><span>بيع <b>—</b></span></div></article>
+        <article class="price-card"><div class="card-top"><span>عيار 24</span><span class="tiny-gold">24K</span></div><div class="price-value waiting">—</div><div class="price-unit">جنيه مصري / جرام</div><div class="buy-sell"><span>شراء <b>—</b></span><span>بيع <b>—</b></span></div></article>
+        <article class="price-card"><div class="card-top"><span>عيار 18</span><span class="tiny-gold">18K</span></div><div class="price-value waiting">—</div><div class="price-unit">جنيه مصري / جرام</div><div class="buy-sell"><span>شراء <b>—</b></span><span>بيع <b>—</b></span></div></article>
+        <article class="price-card"><div class="card-top"><span>جنيه الذهب</span><span class="tiny-gold">8 جرام</span></div><div class="price-value waiting">—</div><div class="price-unit">جنيه مصري</div><div class="buy-sell"><span>شراء <b>—</b></span><span>بيع <b>—</b></span></div></article>
+      </div>
+      <p class="source-note"><span class="status-dot"></span> لن تظهر أرقام فعلية قبل اعتماد مصدر بيانات يسمح بإعادة النشر التجاري.</p>
+    </section>
+
+    <section class="section" id="currencies">
+      <div class="section-heading"><div><span class="eyebrow">CURRENCY EXCHANGE</span><h2>أسعار <em>العملات</em></h2><p>أسعار شراء وبيع البنوك، والسعر الاسترشادي عند الحاجة.</p></div><span class="section-index">02 / FX</span></div>
+      <div class="table-wrap"><table><thead><tr><th>العملة</th><th>شراء</th><th>بيع</th><th>المصدر</th></tr></thead><tbody id="currencyRows">
+        <tr><td><b>الدولار الأمريكي</b><small>USD / EGP</small></td><td>—</td><td>—</td><td><span class="table-status">بانتظار الربط</span></td></tr>
+        <tr><td><b>اليورو الأوروبي</b><small>EUR / EGP</small></td><td>—</td><td>—</td><td><span class="table-status">بانتظار الربط</span></td></tr>
+        <tr><td><b>الريال السعودي</b><small>SAR / EGP</small></td><td>—</td><td>—</td><td><span class="table-status">بانتظار الربط</span></td></tr>
+        <tr><td><b>الدرهم الإماراتي</b><small>AED / EGP</small></td><td>—</td><td>—</td><td><span class="table-status">بانتظار الربط</span></td></tr>
+        <tr><td><b>الدينار الكويتي</b><small>KWD / EGP</small></td><td>—</td><td>—</td><td><span class="table-status">بانتظار الربط</span></td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="section calculator-section" id="calculator">
+      <div class="section-heading"><div><span class="eyebrow">GOLD CALCULATOR</span><h2>حاسبة <em>الذهب</em></h2><p>أدخل بيانات القطعة لمعرفة التكلفة التقديرية عند ربط سعر الجرام.</p></div><span class="section-index">03 / TOOL</span></div>
+      <div class="calculator">
+        <div class="calc-fields">
+          <label>العيار<select id="karat"><option value="21">عيار 21</option><option value="24">عيار 24</option><option value="18">عيار 18</option><option value="14">عيار 14</option></select></label>
+          <label>الوزن بالجرام<input id="weight" type="number" min="0" step="0.01" placeholder="مثال: 5.5"></label>
+          <label>المصنعية للجرام (جنيه)<input id="making" type="number" min="0" step="0.01" placeholder="اختياري"></label>
+          <button class="button gold-button" id="calculate">احسب التكلفة</button>
+        </div>
+        <div class="calc-result"><span class="eyebrow">ESTIMATED TOTAL</span><strong id="calcTotal">—</strong><p id="calcMessage">سيتم تفعيل الحاسبة بعد ربط مصدر أسعار الذهب.</p><small>الحساب تقديري ولا يشمل أي رسوم إضافية غير مدخلة.</small></div>
+      </div>
+    </section>
+
+    <section class="section" id="articles">
+      <div class="section-heading"><div><span class="eyebrow">MARKET INSIGHTS</span><h2>المقالات <em>والتحليلات</em></h2><p>قراءة أعمق لحركة الذهب والعملات والاقتصاد.</p></div><span class="section-index">04 / NEWS</span></div>
+      <div class="article-grid" id="articleGrid"><article class="article-placeholder"><span class="article-kicker">تحليلات السوق</span><h3>مساحة مخصصة لتحليلات الذهب والأسواق</h3><p>سيتم جلب أحدث المقالات من مدونة بلوجر بعد إضافة رابط الخلاصة.</p></article><article class="article-placeholder"><span class="article-kicker">أخبار الاقتصاد</span><h3>الأخبار الاقتصادية في مكان واحد</h3><p>واجهة جاهزة لعرض العناوين والصور وتاريخ النشر وروابط القراءة.</p></article></div>
+    </section>
+
+    <section class="newsletter"><div><span class="eyebrow">ABU MALEK MARKET</span><h2>خليك قريب من حركة السوق.</h2><p>واجهة واحدة لمتابعة الأسعار والأخبار والتحليلات.</p></div><a href="#home" class="button outline-button">العودة للأعلى ↑</a></section>
+  </main>
+
+  <footer><a class="brand footer-brand" href="#"><span class="brand-mark">أم</span><span><b>أبو مالك</b><small>أسعار الذهب والعملات</small></span></a><p>© <span id="year"></span> أبو مالك. جميع الحقوق محفوظة.</p><span class="footer-note">المعلومات لأغراض المتابعة ولا تمثل نصيحة استثمارية.<br><a href="privacy.html">سياسة الخصوصية</a> · <a href="terms.html">الشروط وإخلاء المسؤولية</a></span></footer>
+
+  <nav class="mobile-nav" aria-label="التنقل السريع"><a href="#home">⌂<small>الرئيسية</small></a><a href="#gold">◈<small>الذهب</small></a><a href="#currencies">⇄<small>العملات</small></a><a href="#calculator">▦<small>الحاسبة</small></a><a href="#articles">▤<small>المقالات</small></a></nav>
+  <script src="config.js"></script><script src="app.js"></script>
+</body>
+</html>

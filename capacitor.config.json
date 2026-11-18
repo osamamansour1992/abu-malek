@@ -1,0 +1,8 @@
+{
+  "appId": "com.abumalek.market",
+  "appName": "أبو مالك",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https"
+  }
+}
