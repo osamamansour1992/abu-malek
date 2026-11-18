@@ -121,6 +121,8 @@
 
   function loadBlogger() {
     const status = $('bloggerStatus');
+    const articleGrid = $('articleGrid');
+    if (!status || !articleGrid) return;
     const callbackName = '__abuMalekBloggerCallback';
 
     if (!cfg.BLOGGER_FEED_URL) {
@@ -176,7 +178,7 @@
         </article>`;
       });
 
-      $('articleGrid').innerHTML = cards.join('');
+      articleGrid.innerHTML = cards.join('');
       status.textContent = `تم تحميل ${entries.length} مقالًا من مدونة بلوجر.`;
       cleanup();
     };
