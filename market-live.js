@@ -14,6 +14,7 @@
   ];
 
   let egpPerUsd = null;
+  let goldUsdPerOunce = null;
   let gold24PerGram = null;
   let goldTimestamp = null;
   let fxDate = null;
@@ -59,7 +60,7 @@
   }
 
   async function loadFx() {
-    const url = 'https://api.frankfurter.dev/v2/rates?base=EGP&providers=CBE';
+    const url = 'https://api.frankfurter.dev/v2/providers/cbe/rates?base=EGP';
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) throw new Error('FX HTTP ' + response.status);
     const rows = await response.json();
@@ -67,6 +68,7 @@
     const usd = rows.find(row => row.quote === 'USD' && Number(row.rate) > 0);
     if (!usd) throw new Error('CBE USD/EGP rate unavailable');
     egpPerUsd = 1 / Number(usd.rate);
+    if (goldUsdPerOunce > 0) gold24PerGram = goldUsdPerOunce * egpPerUsd / ounceGrams;
     fxDate = rows.reduce((latest, row) => row.date > latest ? row.date : latest, '');
     renderCurrencies(rows);
     if (gold24PerGram) {
@@ -83,8 +85,9 @@
     const data = await response.json();
     if (!(Number(data.price) > 0) || !data.updatedAt) throw new Error('Gold feed invalid');
     goldTimestamp = data.updatedAt;
+    goldUsdPerOunce = Number(data.price);
     if (egpPerUsd > 0) {
-      gold24PerGram = Number(data.price) * egpPerUsd / ounceGrams;
+      gold24PerGram = goldUsdPerOunce * egpPerUsd / ounceGrams;
       renderGold();
     }
   }
