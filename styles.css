@@ -17,8 +17,7 @@ body.light{--bg:#f4f1e9;--panel:#fff;--panel2:#fff;--text:#172238;--muted:#66748
 
 /* Reference market dashboard layout */
 body{background:#f1f4f8;color:#07152b}
-.topbar{display:none}
-.hero{display:none}
+/* Keep the original site header and hero visible. */
 main{max-width:930px;padding:0 0 24px}
 .section{margin:0 0 15px}
 .section-heading{display:none}
