@@ -7,5 +7,6 @@
 window.ABU_MALEK_CONFIG = {
   BLOGGER_FEED_URL: 'https://asearaldhahab.blogspot.com/feeds/posts/default',
   MARKET_API_URL: '',
-  REFRESH_INTERVAL_MS: 300000
+  REFRESH_INTERVAL_MS: 300000,
+  GA4_MEASUREMENT_ID: ''
 };
