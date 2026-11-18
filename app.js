@@ -18,7 +18,7 @@
       renderMarket(data);
     } catch (e) {
       console.warn('Market feed unavailable:', e);
-      $('lastUpdated').textContent = 'تعذر التحديث؛ تحقق من المصدر';
+      $('lastUpdated').textContent = 'تعذر التحديث؛ تحقق من مصدر الأسعار';
     }
   }
 
@@ -32,10 +32,13 @@
     }).join('');
     $('currencyRows').innerHTML = data.currencies.map(c => `<tr><td><b>${escapeHtml(c.name)}</b><small>${escapeHtml(c.code||'')}</small></td><td>${format(c.buy)}</td><td>${format(c.sell)}</td><td><span class="table-status">${escapeHtml(c.source||'مصدر البيانات')}</span></td></tr>`).join('');
     const date = new Date(data.updatedAt);
-    $('lastUpdated').textContent = Number.isNaN(date.getTime()) ? 'وقت التحديث غير معروف' : date.toLocaleString('ar-EG');
+    const status = data.status === 'stale' ? ' — بيانات قديمة؛ آخر تحديث ناجح' : '';
+    $('lastUpdated').textContent = (Number.isNaN(date.getTime()) ? 'وقت التحديث غير معروف' : date.toLocaleString('ar-EG')) + status;
   }
 
-  function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
 
   $('calculate').addEventListener('click', () => {
     const weight = Number($('weight').value), making = Number($('making').value || 0), karat = $('karat').value;
@@ -50,21 +53,54 @@
     $('calcMessage').textContent = `على أساس سعر بيع ${format(market.gold[karat].sell)} جنيه للجرام، ومصنعية ${format(making)} جنيه للجرام.`;
   });
 
+  function bloggerText(entry) {
+    const raw = entry.summary?.$t || entry.content?.$t || '';
+    const doc = new DOMParser().parseFromString(raw, 'text/html');
+    return (doc.body.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 175);
+  }
+
+  function bloggerImage(entry) {
+    const media = entry.media$thumbnail?.url;
+    if (media) return media.replace(/\/s\d+(-c)?\//, '/s640/');
+    const html = entry.content?.$t || '';
+    const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+    return match ? match[1] : '';
+  }
+
   async function loadBlogger() {
-    if (!cfg.BLOGGER_FEED_URL) return;
+    const status = $('bloggerStatus');
+    if (!cfg.BLOGGER_FEED_URL) {
+      status.textContent = 'لم يتم ضبط رابط مدونة بلوجر بعد.';
+      return;
+    }
     try {
-      const response = await fetch(cfg.BLOGGER_FEED_URL);
-      if (!response.ok) throw new Error('Feed unavailable');
+      const url = new URL(cfg.BLOGGER_FEED_URL);
+      url.searchParams.set('alt', 'json');
+      url.searchParams.set('max-results', '20');
+      const response = await fetch(url.toString(), {headers:{'Accept':'application/json'}, cache:'no-store'});
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const feed = await response.json();
       const entries = feed.feed?.entry || [];
+      if (!entries.length) {
+        status.textContent = 'لم نعثر على مقالات منشورة في خلاصة بلوجر.';
+        return;
+      }
       const cards = entries.slice(0,4).map(entry => {
         const title = entry.title?.$t || 'مقال جديد';
-        const link = (entry.link||[]).find(x=>x.rel==='alternate')?.href || '#';
-        const content = (entry.summary?.$t || '').replace(/<[^>]*>/g,'').slice(0,150);
-        return `<article class="article-placeholder"><span class="article-kicker">من المدونة</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(content)}</p><a class="text-link" href="${escapeHtml(link)}" target="_blank" rel="noopener">اقرأ المقال ←</a></article>`;
+        const link = (entry.link||[]).find(x=>x.rel==='alternate')?.href || 'https://asearaldhahab.blogspot.com/';
+        const summary = bloggerText(entry);
+        const image = bloggerImage(entry);
+        const published = entry.published?.$t ? new Date(entry.published.$t) : null;
+        const date = published && !Number.isNaN(published.getTime()) ? published.toLocaleDateString('ar-EG') : '';
+        return `<article class="article-placeholder article-live">${image ? `<a class="article-thumb" href="${escapeHtml(link)}" target="_blank" rel="noopener"><img src="${escapeHtml(image)}" alt="" loading="lazy"></a>` : ''}<span class="article-kicker">من مدونة أبو مالك ${date ? '· '+date : ''}</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(summary || 'اقرأ المقال كاملًا على مدونة بلوجر.')}</p><a class="text-link" href="${escapeHtml(link)}" target="_blank" rel="noopener">اقرأ المقال ←</a></article>`;
       });
-      if (cards.length) $('articleGrid').innerHTML = cards.join('');
-    } catch(e) { console.warn('Blogger feed unavailable:', e); }
+      $('articleGrid').innerHTML = cards.join('');
+      status.textContent = `تم تحميل ${entries.length} مقالًا من مدونة بلوجر.`;
+    } catch(e) {
+      console.warn('Blogger feed unavailable:', e);
+      status.textContent = 'تعذر تحميل المقالات تلقائيًا الآن. يمكنك قراءة أحدث المقالات مباشرة على بلوجر.';
+      $('articleGrid').innerHTML = `<article class="article-placeholder"><span class="article-kicker">مدونة أبو مالك</span><h3>أحدث المقالات والتحليلات</h3><p>المقالات محفوظة على مدونتك الأصلية، ويمكنك فتحها من هناك لحين استعادة الاتصال بالخلاصة.</p><a class="text-link" href="https://asearaldhahab.blogspot.com/" target="_blank" rel="noopener">زيارة المدونة ←</a></article>`;
+    }
   }
 
   loadMarket();
