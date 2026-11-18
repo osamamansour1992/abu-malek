@@ -101,3 +101,28 @@ main{padding-top:16px}
  .articles-page-main .section-heading{display:block!important}
  .articles-page-main .article-grid{grid-template-columns:1fr}
 }
+
+/* Abu Malek logo and luminous official social marks */
+.brand-logo{width:48px;height:48px;object-fit:contain;display:block;flex:0 0 auto;filter:drop-shadow(0 2px 8px rgba(216,180,106,.24))}
+.footer-brand .brand-logo{width:46px;height:46px}
+.social-link{width:38px;height:38px;border-color:rgba(255,255,255,.18);background:#12213a;box-shadow:0 0 0 1px rgba(255,255,255,.035),0 3px 12px rgba(0,0,0,.24);transition:transform .2s,box-shadow .2s,filter .2s}
+.social-link svg{width:20px;height:20px;display:block;fill:currentColor;filter:drop-shadow(0 0 3px currentColor)}
+.social-facebook{color:#fff;background:linear-gradient(145deg,#1877f2,#0754b8);box-shadow:0 0 13px rgba(24,119,242,.32)}
+.social-youtube{color:#fff;background:linear-gradient(145deg,#ff3548,#c90024);box-shadow:0 0 13px rgba(255,0,38,.28)}
+.social-tiktok{color:#fff;background:linear-gradient(145deg,#17202b,#05080d);box-shadow:0 0 0 1px rgba(37,244,238,.38),0 0 13px rgba(37,244,238,.2)}
+.social-telegram{color:#fff;background:linear-gradient(145deg,#39b9f5,#1687c9);box-shadow:0 0 13px rgba(36,161,222,.3)}
+.social-instagram{color:#fff;background:linear-gradient(135deg,#833ab4 0%,#fd1d1d 52%,#fcb045 100%);box-shadow:0 0 14px rgba(225,48,108,.32)}
+.social-instagram svg{fill:none;filter:drop-shadow(0 0 2px #fff)}
+.social-instagram svg circle:last-child{fill:currentColor}
+.social-link:hover{transform:translateY(-4px) scale(1.09);filter:brightness(1.18);border-color:#fff;box-shadow:0 0 18px currentColor,0 7px 18px #0005}
+.footer-page-links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 20px;margin:12px auto;color:var(--muted);font-size:12px}
+.footer-page-links a:hover{color:var(--gold2)}
+.footer-note{display:block;line-height:2}
+.legal-page{max-width:1000px;margin:0 auto;padding:36px 28px 70px}
+.legal-card{background:linear-gradient(145deg,rgba(22,39,63,.96),rgba(13,25,43,.98));border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--shadow);line-height:2}
+.legal-card h1{color:var(--gold2);font-size:30px;margin:8px 0 18px}
+.legal-card h2{font-size:19px;color:var(--gold2);margin:26px 0 8px}
+.legal-card p,.legal-card li{color:#c3ccda;font-size:15px}
+.legal-card a{color:var(--gold2);text-decoration:underline}
+.contact-mail{display:inline-flex;direction:ltr;font-weight:800;font-size:18px;padding:12px 18px;border:1px solid var(--gold);border-radius:12px;margin:8px 0}
+@media(max-width:620px){.brand-logo{width:42px;height:42px}.footer-page-links{gap:8px 14px;font-size:11px}.legal-page{padding:22px 16px 50px}.legal-card{padding:22px 18px}.legal-card h1{font-size:25px}.social-link{width:36px;height:36px}}
