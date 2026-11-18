@@ -179,7 +179,7 @@
       });
 
       articleGrid.innerHTML = cards.join('');
-      status.textContent = `تم تحميل ${entries.length} مقالًا من مدونة بلوجر.`;
+      status.textContent = 'أحدث المقالات من مدونة أبو مالك';
       cleanup();
     };
 
