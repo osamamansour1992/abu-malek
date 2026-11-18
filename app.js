@@ -8,80 +8,82 @@
   $('themeToggle').addEventListener('click', () => document.body.classList.toggle('light'));
 
   async function loadMarket() {
-    if (!cfg.MARKET_API_URL) return;
+    if (!cfg.MARKET_API_URL) {
+      $('lastUpdated').textContent = 'مصدر الأسعار لم يُعتمد بعد';
+      const note = document.querySelector('.source-note');
+      if (note) note.textContent = 'الأسعار متوقفة مؤقتًا حتى اعتماد مزوّد يسمح بإعادة النشر التجاري. لن نعرض أسعارًا تقديرية أو قديمة.';
+      renderUnavailableCurrencies();
+      return;
+    }
     try {
       const res = await fetch(cfg.MARKET_API_URL, {
-        headers: {'Accept':'application/json', 'X-Contact':'https://osamamansour1992.github.io/abu-malek/'},
+        headers: {'Accept':'application/json'},
         cache: 'no-store'
       });
-      if (!res.ok) throw new Error('تعذر جلب الأسعار: HTTP ' + res.status);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const feed = await res.json();
-      if (!Array.isArray(feed.assets)) throw new Error('صيغة بيانات المصدر غير متوقعة');
-
-      const find = slug => feed.assets.find(a => a.slug === slug);
-      const quote = (asset, side) => {
-        const best = asset?.directions?.[side]?.best;
-        if (!best || !Number.isFinite(Number(best.value))) return null;
-        return {value:Number(best.value), seller:best.sellerAr || best.seller || 'جهة مرصودة'};
-      };
-      const makePair = asset => {
-        const buy = quote(asset, 'buy');
-        const sell = quote(asset, 'sell');
-        if (!buy || !sell) return null;
-        return {buy:buy.value, sell:sell.value, buySource:buy.seller, sellSource:sell.seller};
-      };
-
+      if (!feed || typeof feed !== 'object' || !feed.gold || !Array.isArray(feed.currencies)) {
+        throw new Error('صيغة البيانات غير مطابقة للعقد المطلوب');
+      }
+      const validPair = pair => pair &&
+        Number.isFinite(Number(pair.buy)) && Number(pair.buy) > 0 &&
+        Number.isFinite(Number(pair.sell)) && Number(pair.sell) > 0;
       const gold = {};
-      for (const [karat,slug] of [['21','gold-21k'],['24','gold-24k'],['18','gold-18k']]) {
-        const pair = makePair(find(slug));
-        if (pair) gold[karat] = pair;
-      }
-      if (gold['21']) {
-        gold.coin = {
-          buy: gold['21'].buy * 8,
-          sell: gold['21'].sell * 8,
-          buySource: gold['21'].buySource,
-          sellSource: gold['21'].sellSource,
-          derived: true
+      for (const karat of ['18','21','24','14','coin']) {
+        if (validPair(feed.gold[karat])) gold[karat] = {
+          buy:Number(feed.gold[karat].buy),
+          sell:Number(feed.gold[karat].sell),
+          source:String(feed.gold[karat].source || feed.gold[karat].buySource || 'مصدر الأسعار')
         };
       }
-
-      const currencyDefs = [
-        ['us-dollar','الدولار الأمريكي','USD'],
-        ['euro','اليورو الأوروبي','EUR'],
-        ['saudi-riyal','الريال السعودي','SAR'],
-        ['uae-dirham','الدرهم الإماراتي','AED'],
-        ['kuwaiti-dinar','الدينار الكويتي','KWD']
-      ];
-      const currencies = currencyDefs.map(([slug,name,code]) => {
-        const asset = find(slug);
-        const pair = makePair(asset);
-        if (!pair) return null;
-        return {
-          name, code, buy:pair.buy, sell:pair.sell,
-          source: pair.buySource === pair.sellSource ? pair.buySource : pair.buySource + ' / ' + pair.sellSource
-        };
-      }).filter(Boolean);
-
-      if (!Object.keys(gold).length && !currencies.length) throw new Error('المصدر لم يرجع أسعارًا قابلة للعرض');
-      const dates = feed.assets.map(a => a.observedAt).filter(Boolean).sort();
-      const stale = feed.assets.some(a => a.freshness?.stale === true);
-      const data = {
-        updatedAt: dates[dates.length - 1] || feed.generatedAt || new Date().toISOString(),
-        gold, currencies, status: stale ? 'stale' : 'fresh'
-      };
-      market = data;
-      renderMarket(data);
+      const currencies = feed.currencies
+        .filter(c => c && c.code && validPair(c))
+        .map(c => ({
+          name:String(c.name || c.code),
+          code:String(c.code),
+          buy:Number(c.buy),
+          sell:Number(c.sell),
+          source:String(c.source || 'مصدر الأسعار')
+        }));
+      const updatedAt = feed.updatedAt || feed.rateDate || '';
+      if (!updatedAt || Number.isNaN(new Date(updatedAt).getTime())) {
+        throw new Error('المصدر لم يرسل تاريخ تحديث صالحًا');
+      }
+      if (!Object.keys(gold).length && !currencies.length) {
+        throw new Error('لا توجد أسعار صالحة للعرض');
+      }
+      market = {updatedAt, gold, currencies, status:feed.status === 'stale' ? 'stale' : 'fresh'};
+      renderMarket(market);
       const note = document.querySelector('.source-note');
-      if (note) note.innerHTML = '<span class="status-dot"></span> مصدر البيانات: <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a>. الأسعار إرشادية من جهات مرصودة ووقت الرصد موضح أعلاه. جنيه الذهب محسوب من 8 جرام عيار 21.';
+      if (note) {
+        const sourceName = escapeHtml(feed.sourceName || 'مصدر البيانات المعتمد');
+        const sourceUrl = feed.sourceUrl ? String(feed.sourceUrl) : '';
+        note.innerHTML = '<span class="status-dot"></span> مصدر البيانات: ' +
+          (sourceUrl.startsWith('https://') ? '<a href="' + escapeHtml(sourceUrl) + '" target="_blank" rel="noopener">' + sourceName + '</a>' : sourceName) +
+          '. تاريخ الرصد المعروض هو التاريخ الوارد من المصدر نفسه.';
+      }
     } catch (e) {
       console.warn('Market feed unavailable:', e);
       $('lastUpdated').textContent = market
-        ? $('lastUpdated').textContent + ' — تعذر التحديث؛ نحتفظ بآخر قراءة'
-        : 'تعذر الاتصال بمصدر الأسعار؛ لا توجد أسعار مؤكدة حاليًا';
+        ? $('lastUpdated').textContent + ' — تعذر التحديث؛ آخر قراءة محفوظة'
+        : 'تعذر جلب أسعار موثوقة حاليًا';
       const note = document.querySelector('.source-note');
-      if (note) note.innerHTML = '<span class="status-dot"></span> تعذر تحديث الأسعار من المصدر الآن؛ لن نعرض أرقامًا تقديرية. <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">مصدر البيانات</a>.';
+      if (note) note.textContent = 'تعذر جلب بيانات موثوقة. لن نستبدلها بأرقام تقديرية أو بتاريخ تحديث غير حقيقي.';
     }
+  }
+
+  function renderUnavailableCurrencies() {
+    const defs = [
+      ['الدولار الأمريكي','USD'],['اليورو الأوروبي','EUR'],['الجنيه الإسترليني','GBP'],
+      ['الفرنك السويسري','CHF'],['الين الياباني (100)','JPY'],['اليوان الصيني','CNY'],
+      ['الدولار الكندي','CAD'],['الدولار الأسترالي','AUD'],['الريال السعودي','SAR'],
+      ['الدرهم الإماراتي','AED'],['الدينار الكويتي','KWD'],['الدينار البحريني','BHD'],
+      ['الريال القطري','QAR'],['الريال العماني','OMR'],['الدينار الأردني','JOD'],
+      ['الكرونة الدنماركية','DKK'],['الكرونة النرويجية','NOK'],['الكرونة السويدية','SEK']
+    ];
+    $('currencyRows').innerHTML = defs.map(([name,code]) =>
+      '<tr><td><b>' + escapeHtml(name) + '</b><small>' + code + ' / EGP</small></td><td>غير متاح</td><td>غير متاح</td><td><span class="table-status">بانتظار مصدر معتمد</span></td></tr>'
+    ).join('');
   }
 
   function renderMarket(data) {
@@ -89,13 +91,15 @@
     const labels = {'21':'عيار 21','24':'عيار 24','18':'عيار 18','coin':'جنيه الذهب'};
     $('goldGrid').innerHTML = goldOrder.map((key,i) => {
       const item = data.gold[key];
-      if (!item || !Number.isFinite(Number(item.buy)) || !Number.isFinite(Number(item.sell))) return '';
-      return `<article class="price-card ${i===0?'featured':''}"><div class="card-top"><span>${labels[key]}</span><span class="tiny-gold">${key==='coin'?'8 GRAM':key+'K'}</span></div><div class="price-value">${format(item.sell)}</div><div class="price-unit">جنيه مصري ${key==='coin'?'':'/ جرام'}</div><div class="buy-sell"><span>شراء <b>${format(item.buy)}</b></span><span>بيع <b>${format(item.sell)}</b></span></div></article>`;
-    }).join('');
-    $('currencyRows').innerHTML = data.currencies.map(c => `<tr><td><b>${escapeHtml(c.name)}</b><small>${escapeHtml(c.code||'')}</small></td><td>${format(c.buy)}</td><td>${format(c.sell)}</td><td><span class="table-status">${escapeHtml(c.source||'مصدر البيانات')}</span></td></tr>`).join('');
+      if (!item) return '';
+      return '<article class="price-card ' + (i===0?'featured':'') + '"><div class="card-top"><span>' + labels[key] + '</span><span class="tiny-gold">' + (key==='coin'?'8 GRAM':key+'K') + '</span></div><div class="price-value">' + format(item.sell) + '</div><div class="price-unit">جنيه مصري ' + (key==='coin'?'':'/ جرام') + '</div><div class="buy-sell"><span>شراء <b>' + format(item.buy) + '</b></span><span>بيع <b>' + format(item.sell) + '</b></span></div></article>';
+    }).join('') || '<p class="source-note">أسعار الذهب غير متاحة من مصدر معتمد حاليًا.</p>';
+    $('currencyRows').innerHTML = data.currencies.map(c =>
+      '<tr><td><b>' + escapeHtml(c.name) + '</b><small>' + escapeHtml(c.code) + ' / EGP</small></td><td>' + format(c.buy) + '</td><td>' + format(c.sell) + '</td><td><span class="table-status">' + escapeHtml(c.source) + '</span></td></tr>'
+    ).join('') || '<tr><td colspan="4">أسعار العملات غير متاحة حاليًا.</td></tr>';
     const date = new Date(data.updatedAt);
     const status = data.status === 'stale' ? ' — بيانات قديمة؛ آخر تحديث ناجح' : '';
-    $('lastUpdated').textContent = (Number.isNaN(date.getTime()) ? 'وقت التحديث غير معروف' : date.toLocaleString('ar-EG')) + status;
+    $('lastUpdated').textContent = date.toLocaleString('ar-EG') + status;
   }
 
   function escapeHtml(value) {
