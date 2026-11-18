@@ -1,92 +1,59 @@
+/* أبو مالك PWA service worker
+   تغيير CACHE_VERSION يجبر المتصفحات على تنزيل النسخة الجديدة بعد النشر.
+*/
+const CACHE_VERSION = 'abu-malek-v3';
+const APP_SHELL = [
+  './',
+  './index.html',
+  './styles.css',
+  './config.js',
+  './app.js',
+  './manifest.webmanifest',
+  './offline.html',
+  './privacy.html',
+  './terms.html',
+  './assets/icon.svg'
+];
 
-function loadBlogger() {
-  const status = $('bloggerStatus');
-  const callbackName = '__abuMalekBloggerCallback';
+self.addEventListener('install', event => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_VERSION);
+    await cache.addAll(APP_SHELL);
+    await self.skipWaiting();
+  })());
+});
 
-  if (!cfg.BLOGGER_FEED_URL) {
-    status.textContent = 'رابط مدونة بلوجر غير مضبوط.';
-    return;
-  }
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key.startsWith('abu-malek-') && key !== CACHE_VERSION)
+      .map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
+});
 
-  const oldScript = document.getElementById('blogger-jsonp');
-  if (oldScript) oldScript.remove();
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  const url = new URL(request.url);
 
-  const url = new URL(cfg.BLOGGER_FEED_URL);
-  url.searchParams.set('alt', 'json-in-script');
-  url.searchParams.set('max-results', '20');
-  url.searchParams.set('callback', callbackName);
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  const script = document.createElement('script');
-  script.id = 'blogger-jsonp';
-  script.src = url.toString();
-
-  let finished = false;
-
-  function cleanup() {
-    finished = true;
-    delete window[callbackName];
-    script.remove();
-    clearTimeout(timer);
-  }
-
-  window[callbackName] = feed => {
-    if (finished) return;
-
-    const entries = feed?.feed?.entry || [];
-
-    if (!entries.length) {
-      cleanup();
-      status.textContent = 'لا توجد مقالات منشورة في المدونة.';
-      return;
+  // HTML وملفات الواجهة: الشبكة أولاً حتى تظهر التحديثات فور نشرها.
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_VERSION);
+    try {
+      const response = await fetch(request, { cache: 'no-store' });
+      if (response && response.ok) {
+        cache.put(request, response.clone()).catch(() => {});
+      }
+      return response;
+    } catch (error) {
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      if (request.mode === 'navigate') {
+        return (await cache.match('./offline.html')) || Response.error();
+      }
+      return Response.error();
     }
-
-    const cards = entries.slice(0, 4).map(entry => {
-      const title = entry.title?.$t || 'مقال جديد';
-
-      const link = (entry.link || [])
-        .find(item => item.rel === 'alternate')?.href
-        || 'https://asearaldhahab.blogspot.com/';
-
-      const summary = bloggerText(entry);
-      const image = bloggerImage(entry);
-
-      const date = entry.published?.$t
-        ? new Date(entry.published.$t).toLocaleDateString('ar-EG')
-        : '';
-
-      return `
-        <article class="article-placeholder article-live">
-          ${image ? `
-            <a class="article-thumb" href="${escapeHtml(link)}"
-               target="_blank" rel="noopener">
-              <img src="${escapeHtml(image)}" alt="" loading="lazy">
-            </a>` : ''}
-          <span class="article-kicker">
-            مدونة أبو مالك ${date ? '· ' + date : ''}
-          </span>
-          <h3>${escapeHtml(title)}</h3>
-          <p>${escapeHtml(summary || 'اقرأ المقال كاملًا على المدونة.')}</p>
-          <a class="text-link" href="${escapeHtml(link)}"
-             target="_blank" rel="noopener">اقرأ المقال ←</a>
-        </article>`;
-    });
-
-    $('articleGrid').innerHTML = cards.join('');
-    status.textContent = `تم تحميل ${entries.length} مقالًا من بلوجر.`;
-    cleanup();
-  };
-
-  script.onerror = () => {
-    if (finished) return;
-    cleanup();
-    status.textContent = 'تعذر الاتصال بخلاصة بلوجر.';
-  };
-
-  const timer = setTimeout(() => {
-    if (finished) return;
-    cleanup();
-    status.textContent = 'انتهت مهلة تحميل المقالات. حاول التحديث لاحقًا.';
-  }, 12000);
-
-  document.head.appendChild(script);
-}
+  })());
+});
