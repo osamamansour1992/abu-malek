@@ -14,3 +14,65 @@ body.light{--bg:#f4f1e9;--panel:#fff;--panel2:#fff;--text:#172238;--muted:#66748
 .social-links{display:flex;align-items:center;gap:8px;direction:ltr}.social-link{width:34px;height:34px;border:1px solid rgba(216,180,106,.32);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--gold2);background:#172943;transition:transform .2s,border-color .2s,background .2s}.social-link span{font-family:Arial,sans-serif;font-size:15px;font-weight:800;line-height:1}.social-link:hover{transform:translateY(-3px);border-color:var(--gold);background:#263954}.social-youtube span{font-size:12px}.social-tiktok span{font-size:19px}.social-telegram span{font-size:16px}.social-instagram span{font-size:20px}.footer-social{display:flex;flex-direction:column;gap:9px;align-items:center;color:#c4ad7b;font-size:10px}.footer-social .social-link{width:32px;height:32px}.top-social{margin-inline-start:auto;margin-inline-end:18px}
 @media(max-width:900px){.top-social{gap:5px;margin-inline-end:10px}.top-social .social-link{width:30px;height:30px}}
 @media(max-width:620px){.top-social{margin-inline-start:auto;margin-inline-end:9px;gap:4px}.top-social .social-link{width:27px;height:27px}.top-social .social-link span{font-size:12px}.top-social .social-instagram span{font-size:16px}.top-social .social-tiktok span{font-size:16px}.footer-social{align-items:flex-start;margin:18px 0}.footer-social .social-link{width:34px;height:34px}}
+
+/* Reference market dashboard layout */
+body{background:#f1f4f8;color:#07152b}
+.topbar{display:none}
+.hero{display:none}
+main{max-width:930px;padding:0 0 24px}
+.section{margin:0 0 15px}
+.section-heading{display:none}
+#gold{margin-top:0;border:1px solid #b99718;border-radius:0 0 12px 12px;background:#08162d;padding:12px 15px 14px}
+#gold .source-note{color:#dce5f3;font-size:9px;margin:8px 0 0}
+.gold-six{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.gold-six .price-card{min-height:84px;padding:9px 6px;border-radius:9px;text-align:center;background:#182236;border:1px solid #80680d;box-shadow:none}
+.gold-six .card-top{display:block;font-size:10px;color:#fff}
+.gold-six .tiny-gold{display:none}
+.gold-six .price-value{font-size:16px;color:#ffe000;margin:5px 0 1px}
+.gold-six .price-unit{font-size:8px;color:#dce5f3}
+.gold-six .featured{border-color:#e7c500;background:#29291f}
+.gold-six .dollar-card{border-color:#00c99b;background:#092c35}
+.gold-six .dollar-card .price-value{color:#00e0ad}
+.gold-six .pill{display:block;width:max-content;margin:3px auto 0;font-size:8px;padding:2px 5px}
+.calculator-section{border:1px solid #c8d2df;border-radius:10px;overflow:hidden;background:#fff}
+.calculator-section .section-heading{display:flex;align-items:center;background:#081a35;margin:0;padding:10px 13px;border-bottom:2px solid #e5c400}
+.calculator-section .section-heading>div:before{content:"حاسبة قيمة الذهب بالمصنعية والدمغة";color:#ffe000;font-weight:800;font-size:13px}
+.calculator-section .section-heading h2,.calculator-section .section-heading p,.calculator-section .section-index{display:none}
+.calculator{display:flex;flex-direction:row-reverse;grid-template-columns:none;border:0;border-radius:0;background:#fff}
+.calc-fields{flex:1;padding:14px;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.calc-fields label{color:#081a35;font-size:9px}
+.calc-fields select,.calc-fields input{background:#fff;color:#081a35;border:1px solid #71829a;border-radius:7px;padding:8px;font-size:11px}
+.calc-fields .button{display:none}
+.calc-result{width:210px;min-width:210px;margin:14px 0 14px 14px;padding:10px;background:#081a35;border:1px solid #d2ae00;border-radius:8px;text-align:center;align-items:center}
+.calc-result .eyebrow{font-size:9px;color:#fff}
+.calc-result strong{font-size:19px;color:#ffe000;margin:2px 0}
+.calc-result p,.calc-result small{display:none}
+.currencies-section{border:1px solid #c8d2df;border-radius:10px;overflow:hidden;background:#fff}
+.market-band{background:#081a35;color:#ffe000;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #e4c400}
+.market-band h2{font-size:13px;margin:0;color:#ffe000}
+.market-band>span{font-size:8px;color:#fff}
+.arabic-band{background:#1d2a40}
+.currency-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));direction:rtl}
+.currency-grid.arabic{grid-template-columns:repeat(10,minmax(0,1fr))}
+.currency-tile{min-height:94px;padding:10px 5px 7px;border-left:1px solid #c8d2df;border-bottom:1px solid #c8d2df;display:flex;align-items:center;justify-content:center;gap:3px;flex-direction:column;text-align:center;color:#06152c}
+.currency-tile .currency-code{font-size:9px;font-weight:800;border:1px solid #cbd5e1;border-radius:3px;padding:1px 5px;background:#f3f6fa}
+.currency-tile b{font-size:10px}
+.currency-tile strong{font-size:16px;line-height:1.1}
+.currency-tile small{font-size:8px;color:#52627a}
+.currency-grid.arabic .currency-tile{grid-column:span 2}
+.currency-grid.arabic .currency-tile:nth-last-child(2){grid-column:span 5}
+.currency-grid.arabic .currency-tile:last-child{grid-column:span 5}
+.currency-foot{text-align:center;background:#f0f4f8;color:#0b1b34;font-size:9px;margin:0;padding:10px}
+.currency-empty{padding:15px;grid-column:1/-1;text-align:center;color:#31445f;font-size:11px}
+@media(max-width:700px){
+ main{padding:0 10px 20px}
+ .gold-six{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .calculator{display:flex;flex-direction:column-reverse}
+ .calc-result{width:auto;min-width:0;margin:12px 12px 0}
+ .calc-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .currency-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .currency-grid.arabic{grid-template-columns:repeat(6,minmax(0,1fr))}
+ .currency-grid.arabic .currency-tile{grid-column:span 2}
+ .currency-grid.arabic .currency-tile:nth-last-child(2),.currency-grid.arabic .currency-tile:last-child{grid-column:span 3}
+ .market-band h2{font-size:11px}
+}
