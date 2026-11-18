@@ -2,7 +2,6 @@
   const cfg = window.ABU_MALEK_CONFIG || {};
   const $ = id => document.getElementById(id);
   const format = n => new Intl.NumberFormat('ar-EG',{maximumFractionDigits:2}).format(n);
-  let market = null;
 
   $('year').textContent = new Date().getFullYear();
   $('themeToggle').addEventListener('click', () => document.body.classList.toggle('light'));
@@ -106,19 +105,6 @@
     return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  $('calculate').addEventListener('click', () => {
-    const weight = Number($('weight').value), making = Number($('making').value || 0), karat = $('karat').value;
-    if (!Number.isFinite(weight) || weight <= 0 || !Number.isFinite(making) || making < 0) {
-      $('calcMessage').textContent = 'أدخل وزنًا صحيحًا ومصنعية غير سالبة.'; return;
-    }
-    if (!market?.gold?.[karat] || !Number.isFinite(Number(market.gold[karat].sell))) {
-      $('calcTotal').textContent = '—'; $('calcMessage').textContent = 'الحاسبة غير مفعلة: لا يوجد سعر موثوق لهذا العيار حاليًا.'; return;
-    }
-    const total = weight * (Number(market.gold[karat].sell) + making);
-    $('calcTotal').textContent = format(total) + ' ج.م';
-    $('calcMessage').textContent = `على أساس سعر بيع ${format(market.gold[karat].sell)} جنيه للجرام، ومصنعية ${format(making)} جنيه للجرام.`;
-  });
-
   function bloggerText(entry) {
     const raw = entry.summary?.$t || entry.content?.$t || '';
     const doc = new DOMParser().parseFromString(raw, 'text/html');
@@ -210,9 +196,7 @@
     document.head.appendChild(script);
   }
 
-  loadMarket();
   loadBlogger();
-  if (cfg.MARKET_API_URL && cfg.REFRESH_INTERVAL_MS > 0) setInterval(loadMarket, cfg.REFRESH_INTERVAL_MS);
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(console.warn));
   }
