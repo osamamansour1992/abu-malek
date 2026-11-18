@@ -1,6 +1,6 @@
 {
-  "name": "أبو مالك - أسعار الذهب والعملات",
-  "short_name": "أبو مالك",
+  "name": "أسعار الذهب مع أبو مالك",
+  "short_name": "أسعار الذهب",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
@@ -8,13 +8,5 @@
   "display": "standalone",
   "background_color": "#0b1425",
   "theme_color": "#101b30",
-  "description": "متابعة أسعار الذهب والعملات والأخبار الاقتصادية في مصر.",
-  "icons": [
-    {
-      "src": "assets/abu-malek-logo.webp",
-      "sizes": "256x256",
-      "type": "image/webp",
-      "purpose": "any"
-    }
-  ]
+  "description": "تابع أسعار الذهب والعملات في مصر مع حاسبة الذهب والمقالات والتحليلات."
 }
