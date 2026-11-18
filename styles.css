@@ -75,3 +75,29 @@ main{max-width:930px;padding:0 0 24px}
  .currency-grid.arabic .currency-tile:nth-last-child(2),.currency-grid.arabic .currency-tile:last-child{grid-column:span 3}
  .market-band h2{font-size:11px}
 }
+
+/* Social brand icons */
+.social-link{width:38px;height:38px;color:#f2d38d;border:1px solid rgba(216,180,106,.55);background:linear-gradient(145deg,#203653,#111f34);box-shadow:0 4px 14px #0003}
+.social-link svg{width:19px;height:19px;display:block;fill:currentColor}
+.social-link:hover{transform:translateY(-4px) scale(1.06);color:#fff;border-color:#f0ce83;box-shadow:0 7px 20px #d8b46a35}
+.social-instagram svg{fill:none}
+.social-instagram svg circle:last-child{fill:currentColor;stroke:none}
+.top-social{gap:9px}
+footer .social-link{width:36px;height:36px}
+main{padding-top:16px}
+.section#gold{margin-top:0}
+.articles-page-main{max-width:1100px;padding:34px 28px 55px;min-height:60vh}
+.articles-page-main .section-heading{display:flex!important;margin-bottom:22px}
+.articles-page-main .section-heading h1{font-size:30px;margin:8px 0;color:#fff}
+.articles-page-main .section-heading p{color:#aebbd0}
+.articles-page-main .article-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.articles-page-main .blogger-status{color:#aebbd0}
+.articles-page-main .article-placeholder{min-height:190px}
+@media(max-width:620px){
+ .top-social{gap:5px}
+ .social-link{width:30px;height:30px}
+ .social-link svg{width:16px;height:16px}
+ .articles-page-main{padding:24px 16px 40px}
+ .articles-page-main .section-heading{display:block!important}
+ .articles-page-main .article-grid{grid-template-columns:1fr}
+}
