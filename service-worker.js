@@ -1,7 +1,7 @@
 /* أبو مالك PWA service worker
    تغيير CACHE_VERSION يجبر المتصفحات على تنزيل النسخة الجديدة بعد النشر.
 */
-const CACHE_VERSION = 'abu-malek-v7';
+const CACHE_VERSION = 'abu-malek-v8';
 const APP_SHELL = [
   './',
   './index.html',
