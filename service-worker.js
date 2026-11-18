@@ -5,6 +5,7 @@ const CACHE_VERSION = 'abu-malek-v8';
 const APP_SHELL = [
   './',
   './index.html',
+  './articles.html',
   './styles.css',
   './config.js',
   './app.js',
