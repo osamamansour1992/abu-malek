@@ -48,7 +48,8 @@
     if(message && gold24PerGram>0) message.textContent='السعر المرجعي جاهز. أدخل الوزن والمصنعية واضغط احسب التكلفة.';
   }
   function renderGold(data,global) {
-    const assets=Array.isArray(data.assets)?data.assets:[];
+    const payload=data?.data&&typeof data.data==='object'?data.data:data;
+    const assets=Array.isArray(payload.assets)?payload.assets:Array.isArray(payload.data)?payload.data:[];
     const find=(...slugs)=>assets.find(a=>slugs.includes(String(a.slug||'').toLowerCase())||slugs.includes(String(a.id||'').toLowerCase()));
     const read=a=>{
       const buy=Number(a?.directions?.buy?.best?.value);
@@ -71,15 +72,82 @@
       const estimated=p.estimated?'<small class="derived-note">محسوب حسب النقاء</small>':'';
       return '<article class="price-card '+(key==='21'?'featured':'')+'"><div class="card-top"><span>'+label+'</span>'+(key==='21'?'<span class="pill">الأكثر تداولًا</span>':'')+'</div><div class="buy-sell"><span>البيع لك <b>'+fmt(p.sell)+'</b></span><span>الشراء منك <b>'+fmt(p.buy)+'</b></span></div><div class="price-unit">'+(key==='coin'?'جنيه / 8 جرام':'جنيه / جرام')+'</div>'+estimated+'</article>';
     }).join('');
-    const globalPrice=Number(global.price||global.last||global.value);
-    if(!(globalPrice>0)) throw new Error('Global XAU/USD price missing');
-    const changePct=Number.isFinite(Number(global.chp))?Number(global.chp):Number.isFinite(Number(global.changePercent))?Number(global.changePercent):null;
-    const change=Number.isFinite(changePct)?(changePct>0?'+':'')+fmt(changePct)+'%':'التغير غير متاح';
-    $('globalGoldPrice').textContent='$'+fmt(globalPrice);
-    $('globalGoldChange').textContent=change;
-    $('globalGoldChange').className='global-change'+(changePct>0?' up':changePct<0?' down':'');
-    const globalTime=global.updatedAt||(global.timestamp?Number(global.timestamp)*1000:null);
-    $('globalGoldUpdated').textContent=dateFmt(globalTime);
+    const globalPrice=Number(global?.price||global?.last||global?.value);
+    let globalTime=null;
+    if(globalPrice>0){
+      const changePct=Number.isFinite(Number(global.chp))?Number(global.chp):Number.isFinite(Number(global.changePercent))?Number(global.changePercent):null;
+      const change=Number.isFinite(changePct)?(changePct>0?'+':'')+fmt(changePct)+'%':'التغير غير متاح';
+      $('globalGoldPrice').textContent='
+    const usdRead=read(usd),benchmark=usd?.benchmark;
+    const bankBuy=Number(benchmark?.buy),bankSell=Number(benchmark?.sell);
+    const dealerBuy=usdRead?.buy,dealerSell=usdRead?.sell;
+    const dollarCards=[
+      ['دولار البنك',bankSell>0&&bankBuy>0?{sell:bankSell,buy:bankBuy}:null,'سعر مرجعي للبنك المركزي'],
+      ['أفضل سعر دولار مرخص',dealerSell>0&&dealerBuy>0?{sell:dealerSell,buy:dealerBuy}:null,'أفضل جهة مرخصة حسب دليلك']
+    ];
+    $('dollarGrid').innerHTML=dollarCards.map(([label,p,desc])=>'<article class="price-card dollar-card"><div class="card-top"><span>'+label+'</span></div>'+(p?'<div class="buy-sell"><span>البيع لك <b>'+fmt(p.sell)+'</b></span><span>الشراء منك <b>'+fmt(p.buy)+'</b></span></div>':'<div class="price-value">—</div>')+'<div class="price-unit">'+desc+' · جنيه / دولار</div></article>').join('');
+    const times=[p24.observedAt,p21.observedAt,p18.observedAt,globalTime].filter(Boolean).map(v=>new Date(v).getTime()).filter(Number.isFinite);
+    goldTimestamp=times.length?new Date(Math.min(...times)).toISOString():data.generatedAt;
+    const stale=[p24,p21,p18,p22,p14,p12,coin].some(p=>p.stale);
+    $('lastUpdated').textContent=dateFmt(goldTimestamp)+(stale?' · بعض الأسعار من آخر تحديث سابق':'');
+    updateCalculatorAvailability();
+    setNote('<span class="status-dot"></span> الذهب المحلي: <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> (أفضل أسعار الجهات المرخصة). الأونصة العالمية: <a href="https://gold-api.com/docs" target="_blank" rel="noopener">Gold API</a>. العيارات غير المتاحة منفصلة بالمصدر محسوبة حسب النقاء. <a href="https://market.isagha.com/prices" target="_blank" rel="noopener">مقارنة iSagha</a>. الأسعار استرشادية وليست عرض بيع ملزمًا.');
+  }
+  async function loadGold() {
+    if(goldBusy||document.hidden)return;
+    goldBusy=true;
+    try {
+      const results=await Promise.allSettled([
+        fetchJson('https://getdaleelak.com/api/v1/feed.json?category=metals,currencies'),
+        fetchJson('https://api.gold-api.com/price/XAU')
+      ]);
+      const local=results[0].status==='fulfilled'?results[0].value:null;
+      const global=results[1].status==='fulfilled'?results[1].value:null;
+      const payload=local?.data&&typeof local.data==='object'?local.data:local;
+      const assets=Array.isArray(payload?.assets)?payload.assets:Array.isArray(payload?.data)?payload.data:[];
+      if(!assets.length)throw new Error('Daleelak feed unavailable or has no assets');
+      renderGold(local,global);
+    } catch(error) {
+      console.warn('Gold market update unavailable:',error);
+      setNote('<span class="status-dot"></span> تعذر تحديث أحد مصادر الأسعار. تم الاحتفاظ بالبيانات الظاهرة مع عدم اعتبارها تحديثًا جديدًا. <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> · <a href="https://gold-api.com/docs" target="_blank" rel="noopener">Gold API</a>.');
+      $('globalGoldStatus').textContent='UPDATE UNAVAILABLE';
+    } finally {goldBusy=false;}
+  }
+  function calculate() {
+    const weight=Number($('weight')?.value),makingText=$('making')?.value??'',making=makingText.trim()===''?0:Number(makingText),karat=Number($('karat')?.value);
+    if(!Number.isFinite(weight)||weight<=0||!Number.isFinite(making)||making<0||![12,14,18,21,22,24].includes(karat)){
+      $('calcTotal').textContent='—';$('calcMessage').textContent='أدخل وزنًا أكبر من صفر ومصنعية صفر أو أكثر.';return;
+    }
+    if(!(gold24PerGram>0)){ $('calcTotal').textContent='—';$('calcMessage').textContent='بنحمّل سعر الذهب المرجعي الآن؛ جرّب بعد ظهور الأسعار.';return;}
+    const perGram=goldKaratPrices[karat]||gold24PerGram*karat/24;
+    $('calcTotal').textContent=fmt(weight*(perGram+making))+' ج.م';
+    $('calcMessage').textContent='حساب استرشادي قبل أي رسوم أو دمغة غير مدخلة.';
+  }
+  $('calculate')?.addEventListener('click',calculate);
+  ['weight','making','karat'].forEach(id=>$(id)?.addEventListener('keydown',event=>{if(event.key==='Enter')calculate();}));
+  function schedule(){
+    clearTimeout(goldTimer);clearTimeout(fxTimer);if(document.hidden)return;
+    goldTimer=setTimeout(async()=>{await loadGold();schedule();},300000);
+    fxTimer=setTimeout(async()=>{await loadFx();schedule();},21600000);
+  }
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadGold();loadFx();schedule();}else{clearTimeout(goldTimer);clearTimeout(fxTimer);}});
+  window.addEventListener('focus',()=>{if(!document.hidden){loadGold();loadFx();}});
+  window.addEventListener('pageshow',event=>{if(event.persisted&&!document.hidden){loadGold();loadFx();}});
+  const refreshButton=$('refreshPrices');
+  refreshButton?.addEventListener('click',async()=>{refreshButton.disabled=true;refreshButton.textContent='جارٍ التحديث…';await Promise.allSettled([loadGold(),loadFx()]);refreshButton.disabled=false;refreshButton.textContent='تحديث الأسعار الآن';});
+  Promise.allSettled([loadGold(),loadFx()]).finally(schedule);
+})();+fmt(globalPrice);
+      $('globalGoldChange').textContent=change;
+      $('globalGoldChange').className='global-change'+(changePct>0?' up':changePct<0?' down':'');
+      globalTime=global.updatedAt||(global.timestamp?Number(global.timestamp)*1000:null);
+      $('globalGoldUpdated').textContent=dateFmt(globalTime);
+      $('globalGoldStatus').textContent='LIVE';
+    } else {
+      $('globalGoldPrice').textContent='—';
+      $('globalGoldChange').textContent='غير متاح حاليًا';
+      $('globalGoldUpdated').textContent='—';
+      $('globalGoldStatus').textContent='GLOBAL FEED UNAVAILABLE';
+    }
     const usdRead=read(usd),benchmark=usd?.benchmark;
     const bankBuy=Number(benchmark?.buy),bankSell=Number(benchmark?.sell);
     const dealerBuy=usdRead?.buy,dealerSell=usdRead?.sell;
