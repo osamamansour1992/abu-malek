@@ -57,10 +57,10 @@
       fxDate = rows.reduce((latest,row) => row.date > latest ? row.date : latest,'');
       if (goldUsdPerOunce > 0) gold24PerGram = goldUsdPerOunce*egpPerUsd/ounceGrams;
       renderCurrencies(rows); renderGold();
-      setNote('<span class="status-dot"></span> الذهب: <a href="https://gold-api.com" target="_blank" rel="noopener">Gold API</a>. العملات: <a href="https://frankfurter.dev/providers/cbe/" target="_blank" rel="noopener">بيانات البنك المركزي المصري عبر Frankfurter</a>؛ أسعار مرجعية وليست أسعار بيع وشراء البنوك. الذهب قيمة استرشادية قبل المصنعية والدمغة.');
+      // Gold source attribution is managed by loadGold; FX refresh must not overwrite it.
     } catch (error) {
       console.warn('FX update unavailable:', error);
-      setNote('<span class="status-dot"></span> تعذر تحديث أسعار العملات من المصدر حاليًا؛ لا نعرض أرقامًا بديلة.');
+      console.warn('FX prices are temporarily unavailable; existing displayed rates are retained.');
     } finally { fxBusy = false; }
   }
   async function loadGold() {
