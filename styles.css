@@ -195,3 +195,26 @@ footer{flex-wrap:wrap;row-gap:14px}
 
 /* Live market refresh controls */
 .market-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;color:#dce5f3;font-size:11px}.market-controls .button{min-height:34px;padding:6px 13px;font:inherit;cursor:pointer}.market-controls .button:disabled{opacity:.65;cursor:wait}.gold-six .buy-sell{justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;font-size:9px}.gold-six .buy-sell b{color:#ffe000;margin:0}@media(max-width:620px){.market-controls{align-items:flex-start;flex-direction:column}.market-controls .button{width:100%}}
+
+/* Gold dashboard: international spot + Egyptian buy/sell */
+.global-gold-bar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 10px;padding:13px 16px;background:#081a35;color:#fff;border:1px solid #b99718;border-radius:10px;direction:ltr}
+.global-gold-bar>div:first-child{display:flex;flex-direction:column;gap:2px}
+.global-symbol{font-size:10px;letter-spacing:1px;color:#d8c27d;font-weight:800}
+.global-gold-bar strong{font-size:27px;line-height:1.2;color:#ffe000;font-variant-numeric:tabular-nums}
+.global-change{font-size:14px;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}
+.global-change.up{color:#59d6a2}.global-change.down{color:#ff8585}
+.global-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:9px;color:#dce5f3;text-align:right}
+.global-meta small{font-size:9px;color:#c6d0df}
+.global-meta b{font-variant-numeric:tabular-nums}
+.gold-market-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.gold-market-grid .price-card{min-height:112px;padding:11px 8px;text-align:center}
+.gold-market-grid .card-top{justify-content:center;font-size:12px}
+.gold-market-grid .buy-sell{justify-content:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:7px;font-size:10px}
+.gold-market-grid .buy-sell span{white-space:nowrap}
+.gold-market-grid .buy-sell b{font-variant-numeric:tabular-nums}
+.derived-note{display:block;margin-top:4px;color:#9ba9bc;font-size:8px}
+.dollar-market-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+.dollar-market-grid .price-card{min-height:90px;padding:12px;text-align:center}
+.dollar-market-grid .card-top{justify-content:center}
+.dollar-market-grid .buy-sell{justify-content:center;flex-wrap:wrap}
+@media(max-width:700px){.global-gold-bar{gap:8px;padding:11px 10px;flex-wrap:wrap}.global-gold-bar strong{font-size:22px}.global-change{font-size:12px}.global-meta{font-size:8px}.gold-market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dollar-market-grid{grid-template-columns:1fr}.gold-market-grid .price-card{min-height:108px}}
