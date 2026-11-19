@@ -108,7 +108,7 @@
     const stale=[p24,p21,p18,p22,p14,p12,coin].some(p=>p.stale);
     $('lastUpdated').textContent=dateFmt(goldTimestamp)+(stale?' · بعض الأسعار من آخر تحديث سابق':'');
     updateCalculatorAvailability();
-    setNote('<span class="status-dot"></span> الذهب المحلي: <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> (أفضل أسعار الجهات المرخصة). الأونصة العالمية: <a href="https://gold-api.com/docs" target="_blank" rel="noopener">Gold API</a>. العيارات غير المتاحة منفصلة بالمصدر محسوبة حسب النقاء. <a href="https://market.isagha.com/prices" target="_blank" rel="noopener">مقارنة iSagha</a>. الأسعار استرشادية وليست عرض بيع ملزمًا.');
+    setNote('<span class="status-dot"></span> آخر تحديث للأسعار المعروضة. الأسعار استرشادية قبل المصنعية والدمغة، وقد تُحسب بعض العيارات حسب النقاء عند عدم توافر سعر مستقل.');
   }
   async function loadGold() {
     if(goldBusy||document.hidden)return;
@@ -127,7 +127,7 @@
       renderMarketIndicators(local,global);
     } catch(error) {
       console.warn('Gold market update unavailable:',error);
-      setNote('<span class="status-dot"></span> تعذر تحديث أحد مصادر الأسعار. تم الاحتفاظ بالبيانات الظاهرة مع عدم اعتبارها تحديثًا جديدًا. <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> · <a href="https://gold-api.com/docs" target="_blank" rel="noopener">Gold API</a>.');
+      setNote('<span class="status-dot"></span> تعذر تحديث الأسعار الآن. تم الاحتفاظ بالبيانات الظاهرة دون اعتبارها تحديثًا جديدًا.');
       $('globalGoldStatus').textContent='UPDATE UNAVAILABLE';
     } finally {goldBusy=false;}
   }
