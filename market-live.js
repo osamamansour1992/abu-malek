@@ -77,7 +77,18 @@
     if(globalPrice>0){
       const changePct=Number.isFinite(Number(global.chp))?Number(global.chp):Number.isFinite(Number(global.changePercent))?Number(global.changePercent):null;
       const change=Number.isFinite(changePct)?(changePct>0?'+':'')+fmt(changePct)+'%':'التغير غير متاح';
-      $('globalGoldPrice').textContent='
+      $('globalGoldPrice').textContent='$'+fmt(globalPrice);
+      $('globalGoldChange').textContent=change;
+      $('globalGoldChange').className='global-change'+(changePct>0?' up':changePct<0?' down':'');
+      globalTime=global.updatedAt||(global.timestamp?Number(global.timestamp)*1000:null);
+      $('globalGoldUpdated').textContent=dateFmt(globalTime);
+      $('globalGoldStatus').textContent='LIVE';
+    } else {
+      $('globalGoldPrice').textContent='—';
+      $('globalGoldChange').textContent='غير متاح حاليًا';
+      $('globalGoldUpdated').textContent='—';
+      $('globalGoldStatus').textContent='GLOBAL FEED UNAVAILABLE';
+    }
     const usdRead=read(usd),benchmark=usd?.benchmark;
     const bankBuy=Number(benchmark?.buy),bankSell=Number(benchmark?.sell);
     const dealerBuy=usdRead?.buy,dealerSell=usdRead?.sell;
@@ -204,4 +215,4 @@
   const refreshButton=$('refreshPrices');
   refreshButton?.addEventListener('click',async()=>{refreshButton.disabled=true;refreshButton.textContent='جارٍ التحديث…';await Promise.allSettled([loadGold(),loadFx()]);refreshButton.disabled=false;refreshButton.textContent='تحديث الأسعار الآن';});
   Promise.allSettled([loadGold(),loadFx()]).finally(schedule);
-})();
+})()
