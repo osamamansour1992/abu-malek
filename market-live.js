@@ -17,8 +17,7 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-      const freshUrl = url + (url.includes('?') ? '&' : '?') + '_fresh=' + Date.now();
-      const response = await fetch(freshUrl,{signal:controller.signal,cache:'no-store',headers:{Accept:'application/json','Cache-Control':'no-cache'}});
+      const response = await fetch(url,{signal:controller.signal,cache:'no-store',headers:{Accept:'application/json','Cache-Control':'no-cache'}});
       if (!response.ok) throw new Error('HTTP '+response.status);
       return await response.json();
     } finally { clearTimeout(timeout); }
