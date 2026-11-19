@@ -6,7 +6,7 @@
   const foreign = [['الدولار الأمريكي','USD'],['اليورو الأوروبي','EUR'],['الجنيه الإسترليني','GBP'],['الفرنك السويسري','CHF'],['الدولار الأسترالي','AUD']];
   const arabic = [['الريال السعودي','SAR'],['الدرهم الإماراتي','AED'],['الدينار الكويتي','KWD'],['الدينار البحريني','BHD'],['الريال العماني','OMR'],['الدينار الأردني','JOD'],['الريال القطري','QAR']];
   const allCurrencies = [...foreign,...arabic];
-  let egpPerUsd = null, goldUsdPerOunce = null, gold24PerGram = null, goldTimestamp = null, fxDate = null;
+  let egpPerUsd = null, goldUsdPerOunce = null, gold24PerGram = null, goldKaratPrices = {}, goldTimestamp = null, fxDate = null;
   let goldBusy = false, fxBusy = false, goldTimer = null, fxTimer = null, goldSourceTimestamp = null;
 
   function setNote(message) { const note = document.querySelector('.source-note'); if (note) note.innerHTML = message; }
@@ -83,6 +83,7 @@
       if (!p24 || !p21 || !p18) throw new Error('Daleelak gold karat prices unavailable');
       const bestSell = p21.sell;
       gold24PerGram = p24.sell;
+      goldKaratPrices = {14:p18.sell*14/18,18:p18.sell,21:p21.sell,24:p24.sell};
       goldTimestamp = a21.observedAt || a21.asOf || data.generatedAt || new Date().toISOString();
       goldSourceTimestamp = goldTimestamp;
       const ounce = Number(a24?.global?.value || a24?.benchmark?.global || 0);
@@ -128,7 +129,7 @@
       $('calcMessage').textContent = 'بنحمّل سعر الذهب المرجعي الآن؛ جرّب بعد ظهور الأسعار.';
       return;
     }
-    const perGram = gold24PerGram * karat / 24;
+    const perGram = goldKaratPrices[karat] || (gold24PerGram * karat / 24);
     $('calcTotal').textContent = fmt(weight * (perGram + making)) + ' ج.م';
     $('calcMessage').textContent = 'حساب استرشادي قبل أي رسوم أو دمغة غير مدخلة.';
   }
