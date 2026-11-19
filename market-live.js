@@ -115,7 +115,7 @@
     goldBusy=true;
     try {
       const results=await Promise.allSettled([
-        fetchJson('https://getdaleelak.com/api/v1/feed.json?category=metals,currencies'),
+        fetchJson('https://getdaleelak.com/api/v1/feed.json?category=metals'),
         fetchJson('https://api.gold-api.com/price/XAU')
       ]);
       const local=results[0].status==='fulfilled'?results[0].value:null;
