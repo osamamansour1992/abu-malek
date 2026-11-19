@@ -40,7 +40,8 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 9000);
     try {
-      const response = await fetch(url, {signal:controller.signal, cache:'no-store', headers:{'Accept':'application/json'}});
+      const freshUrl = url + (url.includes('?') ? '&' : '?') + '_fresh=' + Date.now();
+      const response = await fetch(freshUrl, {signal:controller.signal, cache:'no-store', headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
       if (!response.ok) throw new Error('HTTP '+response.status);
       return await response.json();
     } finally { clearTimeout(timeout); }
@@ -145,6 +146,9 @@
     if (!document.hidden) { loadGold(); loadFx(); schedule(); }
     else { clearTimeout(goldTimer); clearTimeout(fxTimer); }
   });
+  // Refresh immediately when a visitor returns to an already-open tab.
+  window.addEventListener('focus', () => { if (!document.hidden) { loadGold(); loadFx(); } });
+  window.addEventListener('pageshow', event => { if (event.persisted && !document.hidden) { loadGold(); loadFx(); } });
   const refreshButton = $('refreshPrices');
   refreshButton?.addEventListener('click', async () => {
     refreshButton.disabled = true;
