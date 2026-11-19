@@ -179,3 +179,16 @@ footer{flex-wrap:wrap;row-gap:14px}
  .footer-page-links{gap:9px;padding:15px 4px}
  .footer-page-links a{min-height:40px;padding:8px 13px;font-size:12px}
 }
+
+/* Header side swap: socials left, brand/logo right, navigation centered */
+.topbar>.top-social{grid-column:1!important;justify-self:start!important;margin-left:42px!important;margin-right:0!important}
+.topbar>.brand{grid-column:3!important;justify-self:end!important;direction:rtl!important;margin-left:0!important;margin-right:0!important}
+.topbar>.brand .brand-name{text-align:right!important}
+.topbar>.desktop-nav{grid-column:2!important;justify-self:center!important}
+@media(max-width:1000px){
+ .topbar>.top-social{margin-left:38px!important}
+}
+@media(max-width:700px){
+ .topbar>.top-social{display:none!important}
+ .topbar>.brand{order:1;direction:rtl!important}
+}
