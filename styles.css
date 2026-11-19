@@ -192,3 +192,6 @@ footer{flex-wrap:wrap;row-gap:14px}
  .topbar>.top-social{display:none!important}
  .topbar>.brand{order:1;direction:rtl!important}
 }
+
+/* Live market refresh controls */
+.market-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;color:#dce5f3;font-size:11px}.market-controls .button{min-height:34px;padding:6px 13px;font:inherit;cursor:pointer}.market-controls .button:disabled{opacity:.65;cursor:wait}.gold-six .buy-sell{justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;font-size:9px}.gold-six .buy-sell b{color:#ffe000;margin:0}@media(max-width:620px){.market-controls{align-items:flex-start;flex-direction:column}.market-controls .button{width:100%}}
