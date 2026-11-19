@@ -218,3 +218,5 @@ footer{flex-wrap:wrap;row-gap:14px}
 .dollar-market-grid .card-top{justify-content:center}
 .dollar-market-grid .buy-sell{justify-content:center;flex-wrap:wrap}
 @media(max-width:700px){.global-gold-bar{gap:8px;padding:11px 10px;flex-wrap:wrap}.global-gold-bar strong{font-size:22px}.global-change{font-size:12px}.global-meta{font-size:8px}.gold-market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dollar-market-grid{grid-template-columns:1fr}.gold-market-grid .price-card{min-height:108px}}
+
+.market-indicator-value{font-size:clamp(16px,2vw,22px);font-weight:900;color:#ffe000;margin:17px 0 8px;line-height:1.6;overflow-wrap:anywhere}.market-indicator-grid .price-card{min-height:145px}.market-indicator-grid .price-unit{line-height:1.8;min-height:28px}
