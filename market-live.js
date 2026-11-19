@@ -110,7 +110,24 @@
     updateCalculatorAvailability();
     setNote('<span class="status-dot"></span> الذهب المحلي: <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> (أفضل أسعار الجهات المرخصة). الأونصة العالمية: <a href="https://gold-api.com/docs" target="_blank" rel="noopener">Gold API</a>. العيارات غير المتاحة منفصلة بالمصدر محسوبة حسب النقاء. <a href="https://market.isagha.com/prices" target="_blank" rel="noopener">مقارنة iSagha</a>. الأسعار استرشادية وليست عرض بيع ملزمًا.');
   }
-  async function loadGold() {
+  function renderXausFallback(data,global) {
+    const base=Number(data?.xau?.price);
+    const quoteCurrency=String(data?.xau?.currency||'').toUpperCase();
+    const unit=String(data?.xau?.unit||'').toLowerCase();
+    if(!(base>0)||quoteCurrency!=='EGP'||unit!=='gram') throw new Error('XAUS fallback returned an unsupported quote');
+    if(data?.data_state?.status==='unavailable') throw new Error('XAUS gold quote unavailable');
+    const stale=!!data.stale||data?.data_state?.status==='stale'||!!data.fx_stale;
+    const karats=[24,22,21,18,14,12];
+    gold24PerGram=base;
+    goldKaratPrices={};
+    for(const k of karats) goldKaratPrices[k]=base*k/24;
+    const cards=karats.map(k=>'<article class="price-card '+(k===21?'featured':'')+'"><div class="card-top"><span>عيار '+k+'</span>'+(k===21?'<span class="pill">الأكثر تداولًا</span>':'')+'</div><div class="price-value">'+fmt(goldKaratPrices[k])+'</div><div class="price-unit">جنيه / جرام · سعر مرجعي</div></article>');
+    cards.push('<article class="price-card"><div class="card-top"><span>الجنيه الذهب</span></div><div class="price-value">'+fmt(goldKaratPrices[21]*8)+'</div><div class="price-unit">جنيه / 8 جرام · تقديري</div></article>');
+    $('goldGrid').innerHTML=cards.join('');
+    const globalPrice=Number(global?.price||global?.last||global?.value||data?.spot_usd_oz);
+    if(globalPrice>0){
+      const changePct=Number.isFinite(Number(global?.chp))?Number(global.chp):Number.isFinite(Number(global?.changePercent))?Number(global.changePercent):null;
+      $('globalGoldPrice').textContent='
     if(goldBusy||document.hidden)return;
     goldBusy=true;
     try {
@@ -127,6 +144,71 @@
     } catch(error) {
       console.warn('Gold market update unavailable:',error);
       setNote('<span class="status-dot"></span> تعذر تحديث أحد مصادر الأسعار. تم الاحتفاظ بالبيانات الظاهرة مع عدم اعتبارها تحديثًا جديدًا. <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> · <a href="https://gold-api.com/docs" target="_blank" rel="noopener">Gold API</a>.');
+      $('globalGoldStatus').textContent='UPDATE UNAVAILABLE';
+    } finally {goldBusy=false;}
+  }
+  function calculate() {
+    const weight=Number($('weight')?.value),makingText=$('making')?.value??'',making=makingText.trim()===''?0:Number(makingText),karat=Number($('karat')?.value);
+    if(!Number.isFinite(weight)||weight<=0||!Number.isFinite(making)||making<0||![12,14,18,21,22,24].includes(karat)){
+      $('calcTotal').textContent='—';$('calcMessage').textContent='أدخل وزنًا أكبر من صفر ومصنعية صفر أو أكثر.';return;
+    }
+    if(!(gold24PerGram>0)){ $('calcTotal').textContent='—';$('calcMessage').textContent='بنحمّل سعر الذهب المرجعي الآن؛ جرّب بعد ظهور الأسعار.';return;}
+    const perGram=goldKaratPrices[karat]||gold24PerGram*karat/24;
+    $('calcTotal').textContent=fmt(weight*(perGram+making))+' ج.م';
+    $('calcMessage').textContent='حساب استرشادي قبل أي رسوم أو دمغة غير مدخلة.';
+  }
+  $('calculate')?.addEventListener('click',calculate);
+  ['weight','making','karat'].forEach(id=>$(id)?.addEventListener('keydown',event=>{if(event.key==='Enter')calculate();}));
+  function schedule(){
+    clearTimeout(goldTimer);clearTimeout(fxTimer);if(document.hidden)return;
+    goldTimer=setTimeout(async()=>{await loadGold();schedule();},300000);
+    fxTimer=setTimeout(async()=>{await loadFx();schedule();},21600000);
+  }
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadGold();loadFx();schedule();}else{clearTimeout(goldTimer);clearTimeout(fxTimer);}});
+  window.addEventListener('focus',()=>{if(!document.hidden){loadGold();loadFx();}});
+  window.addEventListener('pageshow',event=>{if(event.persisted&&!document.hidden){loadGold();loadFx();}});
+  const refreshButton=$('refreshPrices');
+  refreshButton?.addEventListener('click',async()=>{refreshButton.disabled=true;refreshButton.textContent='جارٍ التحديث…';await Promise.allSettled([loadGold(),loadFx()]);refreshButton.disabled=false;refreshButton.textContent='تحديث الأسعار الآن';});
+  Promise.allSettled([loadGold(),loadFx()]).finally(schedule);
+})();
++fmt(globalPrice);
+      $('globalGoldChange').textContent=Number.isFinite(changePct)?(changePct>0?'+':'')+fmt(changePct)+'%':'التغير غير متاح';
+      $('globalGoldChange').className='global-change'+(changePct>0?' up':changePct<0?' down':'');
+      $('globalGoldUpdated').textContent=dateFmt(global?.updatedAt||data?.price_as_of||data?.updated_at);
+      $('globalGoldStatus').textContent=global?'LIVE':'XAUS REFERENCE';
+    }else{
+      $('globalGoldPrice').textContent='—';$('globalGoldChange').textContent='غير متاح حاليًا';
+      $('globalGoldUpdated').textContent='—';$('globalGoldStatus').textContent='GLOBAL FEED UNAVAILABLE';
+    }
+    const quoteTime=data.price_as_of||data.updated_at||data.data_state?.as_of;
+    $('lastUpdated').textContent=dateFmt(quoteTime)+(stale?' · آخر سعر محفوظ أو تحويل عملة قديم':'');
+    updateCalculatorAvailability();
+    setNote('<span class="status-dot"></span> عرض احتياطي: سعر الذهب المرجعي العالمي محوّل للجنيه، وليس سعر بيع وشراء الصاغة. المصدر: <a href="https://xaus.com/api/" target="_blank" rel="noopener">XAUS Gold API</a>. أسعار العيارات محسوبة حسب النقاء، والجنيه الذهب تقديري. عند عودة أسعار السوق المحلية سنعرضها بدلًا منه.');
+  }
+  async function loadGold() {
+    if(goldBusy||document.hidden)return;
+    goldBusy=true;
+    try {
+      const results=await Promise.allSettled([
+        fetchJson('https://getdaleelak.com/api/v1/feed.json?category=metals'),
+        fetchJson('https://api.gold-api.com/price/XAU'),
+        fetchJson('https://xaus.com/api/v1/spot?currency=EGP&unit=gram&compact=1')
+      ]);
+      const local=results[0].status==='fulfilled'?results[0].value:null;
+      const global=results[1].status==='fulfilled'?results[1].value:null;
+      const fallback=results[2].status==='fulfilled'?results[2].value:null;
+      const payload=local?.data&&typeof local.data==='object'?local.data:local;
+      const assets=Array.isArray(payload?.assets)?payload.assets:Array.isArray(payload?.data)?payload.data:[];
+      if(assets.length){
+        renderGold(local,global);
+      } else if(fallback){
+        renderXausFallback(fallback,global);
+      } else {
+        throw new Error('Local and reference gold feeds are unavailable');
+      }
+    } catch(error) {
+      console.warn('Gold market update unavailable:',error);
+      setNote('<span class="status-dot"></span> تعذر تحديث أسعار الذهب حاليًا. تم الاحتفاظ بالبيانات الظاهرة دون اعتبارها تحديثًا جديدًا. <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> · <a href="https://xaus.com/api/" target="_blank" rel="noopener">XAUS</a>.');
       $('globalGoldStatus').textContent='UPDATE UNAVAILABLE';
     } finally {goldBusy=false;}
   }
