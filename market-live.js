@@ -52,15 +52,22 @@
     const assets=Array.isArray(payload.assets)?payload.assets:Array.isArray(payload.data)?payload.data:[];
     const find=(...slugs)=>assets.find(a=>slugs.includes(String(a.slug||'').toLowerCase())||slugs.includes(String(a.id||'').toLowerCase()));
     const read=a=>{
-      const buy=Number(a?.directions?.buy?.best?.value);
-      const sell=Number(a?.directions?.sell?.best?.value);
-      return buy>0&&sell>0?{buy,sell,observedAt:a.observedAt,stale:!!a.freshness?.stale,sellerBuy:a.directions.buy.best.sellerAr||a.directions.buy.best.seller,sellerSell:a.directions.sell.best.sellerAr||a.directions.sell.best.seller}:null;
+      // In Daleelak: directions.buy = price paid by customer to buy; directions.sell = price paid to customer when selling.
+      const customerBuys=Number(a?.directions?.buy?.best?.value);
+      const customerSells=Number(a?.directions?.sell?.best?.value);
+      return customerBuys>0&&customerSells>0?{sell:customerBuys,buy:customerSells,observedAt:a.observedAt,stale:!!a.freshness?.stale}:null;
     };
     const a24=find('gold-24k','gold-24'),a22=find('gold-22k','gold-22'),a21=find('gold-21k','gold-21'),a18=find('gold-18k','gold-18'),a14=find('gold-14k','gold-14'),a12=find('gold-12k','gold-12'),aCoin=find('gold-pound','gold-coin','gold-sovereign'),usd=find('us-dollar','USD-EGP');
-    const p24=read(a24),p21=read(a21),p18=read(a18);
-    if(!p24||!p21||!p18) throw new Error('Local gold feed missing essential 24K/21K/18K prices');
-    const scaled=(base,karat)=>({buy:base.buy*karat/24,sell:base.sell*karat/24,observedAt:base.observedAt,stale:base.stale,estimated:true});
-    const p22=read(a22)||scaled(p24,22),p14=read(a14)||scaled(p24,14),p12=read(a12)||scaled(p24,12);
+    let p24=read(a24),p22=read(a22),p21=read(a21),p18=read(a18),p14=read(a14),p12=read(a12);
+    const base=p24?{price:p24,karat:24}:p21?{price:p21,karat:21}:p18?{price:p18,karat:18}:p22?{price:p22,karat:22}:p14?{price:p14,karat:14}:p12?{price:p12,karat:12}:null;
+    if(!base) throw new Error('Daleelak feed returned no usable gold-karat prices');
+    const scaled=(source,fromKarat,toKarat)=>({buy:source.buy*toKarat/fromKarat,sell:source.sell*toKarat/fromKarat,observedAt:source.observedAt,stale:source.stale,estimated:true});
+    p24=p24||scaled(base.price,base.karat,24);
+    p22=p22||scaled(base.price,base.karat,22);
+    p21=p21||scaled(base.price,base.karat,21);
+    p18=p18||scaled(base.price,base.karat,18);
+    p14=p14||scaled(base.price,base.karat,14);
+    p12=p12||scaled(base.price,base.karat,12);
     const coin=read(aCoin)||{buy:p21.buy*8,sell:p21.sell*8,estimated:true,observedAt:p21.observedAt,stale:p21.stale};
     gold24PerGram=p24.sell;
     goldKaratPrices={24:p24.sell,22:p22.sell,21:p21.sell,18:p18.sell,14:p14.sell,12:p12.sell};
