@@ -7,7 +7,7 @@
   const arabic = [['الريال السعودي','SAR'],['الدرهم الإماراتي','AED'],['الدينار الكويتي','KWD'],['الدينار البحريني','BHD'],['الريال العماني','OMR'],['الدينار الأردني','JOD'],['الريال القطري','QAR']];
   const allCurrencies = [...foreign,...arabic];
   let egpPerUsd = null, goldUsdPerOunce = null, gold24PerGram = null, goldTimestamp = null, fxDate = null;
-  let goldBusy = false, fxBusy = false, goldTimer = null, fxTimer = null;
+  let goldBusy = false, fxBusy = false, goldTimer = null, fxTimer = null, goldSourceTimestamp = null;
 
   function setNote(message) { const note = document.querySelector('.source-note'); if (note) note.innerHTML = message; }
   function renderGold() {
@@ -40,7 +40,7 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 9000);
     try {
-      const response = await fetch(url, {signal:controller.signal, cache:'default', headers:{'Accept':'application/json'}});
+      const response = await fetch(url, {signal:controller.signal, cache:'no-store', headers:{'Accept':'application/json'}});
       if (!response.ok) throw new Error('HTTP '+response.status);
       return await response.json();
     } finally { clearTimeout(timeout); }
@@ -67,14 +67,46 @@
     if (goldBusy || document.hidden) return;
     goldBusy = true;
     try {
-      const data = await fetchJson('https://api.gold-api.com/price/XAU');
-      if (!(Number(data.price) > 0) || !data.updatedAt) throw new Error('Gold feed invalid');
-      goldTimestamp = data.updatedAt;
-      goldUsdPerOunce = Number(data.price);
-      if (egpPerUsd > 0) { gold24PerGram = goldUsdPerOunce*egpPerUsd/ounceGrams; renderGold(); }
+      const data = await fetchJson('https://getdaleelak.com/api/v1/feed.json?category=metals');
+      if (!data || !Array.isArray(data.assets) || !data.assets.length) throw new Error('Daleelak feed invalid');
+      const findAsset = (...slugs) => data.assets.find(asset => slugs.includes(String(asset.slug || '').toLowerCase()) || slugs.includes(String(asset.id || '').toLowerCase()));
+      const pick = asset => {
+        const buy = Number(asset?.directions?.buy?.best?.value);
+        const sell = Number(asset?.directions?.sell?.best?.value);
+        return buy > 0 && sell > 0 ? {buy, sell} : null;
+      };
+      const a24 = findAsset('gold-24k','gold-24');
+      const a21 = findAsset('gold-21k','gold-21');
+      const a18 = findAsset('gold-18k','gold-18');
+      const coin = findAsset('gold-pound','gold-coin','gold-sovereign');
+      const p24 = pick(a24), p21 = pick(a21), p18 = pick(a18), pCoin = pick(coin);
+      if (!p24 || !p21 || !p18) throw new Error('Daleelak gold karat prices unavailable');
+      const bestSell = p21.sell;
+      gold24PerGram = p24.sell;
+      goldTimestamp = a21.observedAt || a21.asOf || data.generatedAt || new Date().toISOString();
+      goldSourceTimestamp = goldTimestamp;
+      const ounce = Number(a24?.global?.value || a24?.benchmark?.global || 0);
+      const coinPrices = pCoin || {buy:p21.buy*8, sell:p21.sell*8};
+      const cards = [
+        ['24','عيار 24',p24,'جنيه / جرام'],
+        ['21','عيار 21',p21,'جنيه / جرام'],
+        ['18','عيار 18',p18,'جنيه / جرام'],
+        ['coin','جنيه الذهب',coinPrices,'جنيه / 8 جرام'],
+        ['ounce','الأونصة عالميًا',ounce > 0 ? {buy:ounce,sell:ounce} : null,'دولار أمريكي'],
+        ['usd','دولار الصاغة',null,'']
+      ];
+      $('goldGrid').innerHTML = cards.map(([key,label,prices,unit]) => {
+        const value = prices ? '<div class="price-value">'+fmt(prices.sell)+'</div><div class="buy-sell"><span>بيع: <b>'+fmt(prices.sell)+'</b></span><span>شراء: <b>'+fmt(prices.buy)+'</b></span></div>' :
+          key === 'usd' ? '<div class="price-value">'+(egpPerUsd > 0 ? fmt(egpPerUsd) : '—')+'</div><div class="price-unit">مرجع البنك المركزي</div>' :
+          '<div class="price-value">—</div><div class="price-unit">غير متاح من المصدر</div>';
+        return '<article class="price-card '+(key==='21'?'featured ':'')+(key==='usd'?'dollar-card':'')+'"><div class="card-top"><span>'+label+'</span>'+(key==='21'?'<span class="pill">الأكثر تداولًا</span>':'')+'</div>'+value+(unit?'<div class="price-unit">'+unit+'</div>':'')+'</article>';
+      }).join('');
+      $('lastUpdated').textContent = new Date(goldTimestamp).toLocaleString('ar-EG');
+      updateCalculatorAvailability();
+      setNote('<span class="status-dot"></span> أسعار الذهب المحلية من <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">دليلك</a> (أفضل سعر شراء وبيع من الجهات المرخصة). <a href="https://market.isagha.com/prices" target="_blank" rel="noopener">افتح أسعار iSagha للمقارنة</a>. الأسعار استرشادية وقد تختلف حسب التاجر.');
     } catch (error) {
       console.warn('Gold update unavailable:', error);
-      setNote('<span class="status-dot"></span> تعذر تحديث سعر الذهب من المصدر حاليًا؛ لا نعرض أرقامًا بديلة.');
+      setNote('<span class="status-dot"></span> تعذر تحديث أسعار الذهب من دليلك حاليًا. لم نعرض أسعارًا قديمة على أنها أسعار جديدة. <a href="https://getdaleelak.com/ar/api" target="_blank" rel="noopener">حالة المصدر</a>.');
     } finally { goldBusy = false; }
   }
   function updateCalculatorAvailability() {
@@ -105,12 +137,20 @@
   function schedule() {
     clearTimeout(goldTimer); clearTimeout(fxTimer);
     if (document.hidden) return;
-    goldTimer = setTimeout(async () => { await loadGold(); schedule(); }, 60000);
+    goldTimer = setTimeout(async () => { await loadGold(); schedule(); }, 300000);
     fxTimer = setTimeout(async () => { await loadFx(); schedule(); }, 21600000);
   }
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) { loadGold(); loadFx(); schedule(); }
     else { clearTimeout(goldTimer); clearTimeout(fxTimer); }
+  });
+  const refreshButton = $('refreshPrices');
+  refreshButton?.addEventListener('click', async () => {
+    refreshButton.disabled = true;
+    refreshButton.textContent = 'جارٍ التحديث…';
+    await Promise.allSettled([loadGold(), loadFx()]);
+    refreshButton.disabled = false;
+    refreshButton.textContent = 'تحديث الأسعار الآن';
   });
   Promise.allSettled([loadFx(),loadGold()]).finally(schedule);
 })();
